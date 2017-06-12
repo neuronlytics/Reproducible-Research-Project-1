@@ -1,0 +1,46 @@
+rm(list=ls())
+cat('\014')
+library(ggplot2)
+library(scales)
+library(Hmisc)
+library(dplyr)
+
+#Load Dataset
+dataset = read.csv('activity.csv', header = TRUE, sep = ',', colClasses = c('numeric', 'character','integer'))
+dataset$date <- as.Date(dataset$date, '%Y-%m-%d')
+
+ggplot(data = na.omit(dataset), aes(date, steps)) + stat_summary(fun.y = sum, geom = 'bar',fill='#16a085') +
+  labs(title = 'Histogram of Steps per Day', x = 'Steps per Day', y = 'Frequency')
+
+steps = with(dataset, tapply(steps, date, sum, na.rm = TRUE))
+median(steps)
+mean(steps)
+
+# What is the average daily dataset pattern?
+datasetForMeans = na.omit(dataset)
+datasetdMeans = with(datasetForMeans, tapply(steps, interval, mean))
+
+#
+plot(datasetdMeans, type = 'l', xaxt = 'n', main='Step Freq. per Interval', xlab = 'Mins per Day', ylab = 'Avg. # of Steps', color='#16a085',lwd=2)
+axis(1, at=seq_along(datasetdMeans), labels = names(datasetdMeans))
+
+# datasetdMeans[which(datasetdMeans == max(datasetdMeans))]
+datasetClean = is.na(dataset)
+sum(datasetClean)
+sum(datasetClean)/nrow(dataset)
+
+# Imputing missing values
+datasetMissing=length(which(is.na(dataset$steps)))
+datasetFilled = dataset
+datasetFilled$steps = impute(dataset$steps, fun=mean)
+
+head(dataset)
+plot2 = ggplot(data = dataset, aes(date, steps)) + stat_summary(fun.y = sum, geom =  'bar',fill='#16a085')
+plot2
+
+steps = with(dataset, tapply(steps, date, sum, na.rm = TRUE))
+mean(steps)
+
+# Are there differences in dataset patterns between datasetwkd and datasetwke?
+dataset = mutate(dataset, day = weekdays(dataset$date))
+datasetwkd = c('Mon', 'Tue', 'Wed', 'Thur', 'Fri')
