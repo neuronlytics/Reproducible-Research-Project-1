@@ -6,7 +6,7 @@ library(scales)
 library(Hmisc)
 library(dplyr)
 
-#Load Dataset
+## Load Dataset
 dataset = read.csv("activity.csv", header = TRUE, sep = ',', colClasses = c("numeric", "character","integer"))
 dataset = transform(dataset, date = as.Date(dataset$date, format = "%Y-%m-%d"))
 
@@ -17,7 +17,7 @@ daySteps = with(dataset, tapply(steps, date, sum, na.rm = TRUE))
 dayStepsMedian = median(daysteps)
 dayStepsMean = mean(daysteps)
 
-# What is the average daily dataset pattern?
+## What is the average daily dataset pattern?
 datasetForMeans = na.omit(dataset)
 datasetdMeans = with(datasetForMeans, tapply(steps, interval, mean))
 
@@ -29,7 +29,7 @@ ggplot(dayStepsAvg, aes(interval, steps)) + geom_line(color='#16a085') + xlab("T
 datasetAllMissing = sum(is.na(dataset$steps))
 sum(is.na(dataset$steps))/nrow(dataset)
 
-# Imputing missing values
+## Imputing missing values
 datasetMissing=length(which(is.na(dataset$steps)))
 datasetComplete = dataset
 datasetComplete$steps = impute(dataset$steps, fun=mean)
@@ -40,7 +40,7 @@ plot2
 steps = with(dataset, tapply(steps, date, sum, na.rm = TRUE))
 mean(steps)
 
-# Are there differences in dataset patterns between datasetwkd and datasetwke?
+## Are there differences in dataset patterns between datasetwkd and datasetwke?
 datasetwkd = c("Mon", "Tue", "Wed", "Thur", "Fri")
 datasetComplete$dayType = ifelse(weekdays(datasetComplete$date) %in% datasetwkd, "Weekday", "Weekend")
 datasetComplete$dayType = ifelse(weekdays(datasetComplete$date) %in% datasetwkd, "Weekday", "Weekend")
