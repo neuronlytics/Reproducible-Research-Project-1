@@ -1,46 +1,50 @@
 rm(list=ls())
-cat('\014')
+cat("\014")
 library(ggplot2)
+library(lattice)
 library(scales)
 library(Hmisc)
 library(dplyr)
 
 #Load Dataset
-dataset = read.csv('activity.csv', header = TRUE, sep = ',', colClasses = c('numeric', 'character','integer'))
-dataset$date <- as.Date(dataset$date, '%Y-%m-%d')
+dataset = read.csv("activity.csv", header = TRUE, sep = ',', colClasses = c("numeric", "character","integer"))
+dataset = transform(dataset, date = as.Date(dataset$date, format = "%Y-%m-%d"))
 
-ggplot(data = na.omit(dataset), aes(date, steps)) + stat_summary(fun.y = sum, geom = 'bar',fill='#16a085') +
-  labs(title = 'Histogram of Steps per Day', x = 'Steps per Day', y = 'Frequency')
+ggplot(data = na.omit(dataset), aes(date, steps)) + stat_summary(fun.y = sum, geom = "bar",fill='#16a085') +
+  labs(title = "Histogram of Steps per Day", x = "Steps per Day", y = "Frequency")
 
-steps = with(dataset, tapply(steps, date, sum, na.rm = TRUE))
-median(steps)
-mean(steps)
+daySteps = with(dataset, tapply(steps, date, sum, na.rm = TRUE))
+dayStepsMedian = median(daysteps)
+dayStepsMean = mean(daysteps)
 
 # What is the average daily dataset pattern?
 datasetForMeans = na.omit(dataset)
 datasetdMeans = with(datasetForMeans, tapply(steps, interval, mean))
 
-#
-plot(datasetdMeans, type = 'l', xaxt = 'n', main='Step Freq. per Interval', xlab = 'Mins per Day', ylab = 'Avg. # of Steps', color='#16a085',lwd=2)
-axis(1, at=seq_along(datasetdMeans), labels = names(datasetdMeans))
+dayStepsAvg = aggregate(list(steps = dataset$steps), list(interval = dataset$interval), mean, na.rm = TRUE)
 
-# datasetdMeans[which(datasetdMeans == max(datasetdMeans))]
-datasetClean = is.na(dataset)
-sum(datasetClean)
-sum(datasetClean)/nrow(dataset)
+ggplot(dayStepsAvg, aes(interval, steps)) + geom_line(color='#16a085') + xlab("Time Interval") +
+  ylab("Avg. Steps") + ggtitle("Avg. Activity Pattern") 
+
+datasetAllMissing = sum(is.na(dataset$steps))
+sum(is.na(dataset$steps))/nrow(dataset)
 
 # Imputing missing values
 datasetMissing=length(which(is.na(dataset$steps)))
-datasetFilled = dataset
-datasetFilled$steps = impute(dataset$steps, fun=mean)
+datasetComplete = dataset
+datasetComplete$steps = impute(dataset$steps, fun=mean)
 
-head(dataset)
-plot2 = ggplot(data = dataset, aes(date, steps)) + stat_summary(fun.y = sum, geom =  'bar',fill='#16a085')
+plot2 = ggplot(data = dataset, aes(date, steps)) + stat_summary(fun.y = sum, geom =  'bar')
 plot2
 
 steps = with(dataset, tapply(steps, date, sum, na.rm = TRUE))
 mean(steps)
 
 # Are there differences in dataset patterns between datasetwkd and datasetwke?
-dataset = mutate(dataset, day = weekdays(dataset$date))
-datasetwkd = c('Mon', 'Tue', 'Wed', 'Thur', 'Fri')
+datasetwkd = c("Mon", "Tue", "Wed", "Thur", "Fri")
+datasetComplete$dayType = ifelse(weekdays(datasetComplete$date) %in% datasetwkd, "Weekday", "Weekend")
+datasetComplete$dayType = ifelse(weekdays(datasetComplete$date) %in% datasetwkd, "Weekday", "Weekend")
+datasetFinal = aggregate(datasetComplete$steps, list(interval = datasetComplete$interval, 
+                                                     dayType = datasetComplete$dayType), mean)
+
+xyplot(x ~ interval | dayType, datasetFinal, layout=c(1,2), type = "l", ylab = "# of Steps")
