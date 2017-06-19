@@ -45,7 +45,7 @@ plot3
 steps = with(dataset, tapply(steps, date, sum, na.rm = TRUE))
 mean(steps)
 
-## Are there differences in dataset patterns between datasetwkd and datasetwke?
+## Are there differences in activity patterns between weekdays and weekends?
 datasetwkd = c("Mon", "Tue", "Wed", "Thur", "Fri")
 datasetComplete = mutate(datasetComplete, weektype = ifelse(weekdays(datasetComplete$date) == "Saturday" | weekdays(datasetComplete$date) == "Sunday", "weekend", "weekday"))
 datasetComplete$weektype = as.factor(datasetComplete$weektype)
